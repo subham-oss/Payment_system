@@ -1,6 +1,6 @@
-import app from './scr/app.js';
+import app from './src/app.js';
 import "dotenv/config";
-import connectDB from './scr/config/db.js';
+import connectDB from './src/config/db.js';
 
 connectDB();
 
