@@ -1,5 +1,6 @@
 import User from "../models/user.model.js";
 import jwt from "jsonwebtoken";
+import { sendRegistrationEmail } from "../services/email.service.js";
 
 export const userRegisterController = async (req, res) => {
     const { name, email, password } = req.body;
@@ -23,6 +24,8 @@ export const userRegisterController = async (req, res) => {
         success:true,
         token
     })
+    // Send registration email
+    await sendRegistrationEmail(user.name, user.email);
 }
 export const userLoginController = async (req, res) => {
     const { email, password} = req.body;
