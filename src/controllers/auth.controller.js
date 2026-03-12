@@ -17,7 +17,7 @@ export const userRegisterController = async (req, res) => {
     const user = await User.create({
         name,email,password
     })
-    const token = jwt.sign({userId:User._id},process.env.SECRET_KEY,{expiresIn:"2d"});
+    const token = jwt.sign({userId:user._id},process.env.SECRET_KEY,{expiresIn:"2d"});
     res.cookie("token",token)
     res.status(201).json({
         message:"User registered successfully",
