@@ -24,6 +24,12 @@ const transactionSchema = new mongoose.Schema({
         type: Number,
         required: [true, "Transaction must have an amount"],
         min: [0, "Amount must be greater than 0"]
+    },
+    idempotencyKey: {
+        type: String,
+        required: [true, "Transaction must have an idempotency key"],
+        unique: true,
+        index: true
     }
 },{
     timestamps: true
