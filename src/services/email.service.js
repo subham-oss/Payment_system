@@ -1,10 +1,7 @@
 import nodemailer from "nodemailer";
 
-
 const sendEmail = async (to, subject, text, html) => {
   try {
-    
-
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
@@ -13,7 +10,6 @@ const sendEmail = async (to, subject, text, html) => {
         clientId: process.env.CLIENT_ID,
         clientSecret: process.env.CLIENT_SECRET,
         refreshToken: process.env.REFRESH_TOKEN,
-       
       },
     });
 
@@ -26,7 +22,6 @@ const sendEmail = async (to, subject, text, html) => {
     });
 
     console.log("Message sent:", info.messageId);
-
   } catch (error) {
     console.error("Error sending email:", error);
   }
@@ -34,7 +29,7 @@ const sendEmail = async (to, subject, text, html) => {
 
 export const sendRegistrationEmail = async (name, userEmail) => {
   const subject = "Welcome to Payment System!";
-  
+
   const text = `Hello ${name},
 
 Thank you for registering with Payment System.
@@ -50,4 +45,3 @@ Payment System Team`;
 
   await sendEmail(userEmail, subject, text, html);
 };
-
