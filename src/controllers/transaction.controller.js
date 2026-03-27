@@ -1,8 +1,9 @@
 import mongoose from "mongoose";
-import Transaction from "../models/transaction.model";
-import Ledger from "../models/ledger.model";
-import Account from "../models/account.model";
-const createTransaction = async (req, res) => {
+import Transaction from "../models/transaction.model.js";
+import Ledger from "../models/ledger.model.js";
+import Account from "../models/account.model.js";
+import { sendTransactionEmail, sendFailureEmail } from "../services/email.service";
+export const createTransaction = async (req, res) => {
   const { fromAccount, toAccount, amount, idempotencyKey } = req.body;
 
   if (!fromAccount || !toAccount || !amount || !idempotencyKey) {
@@ -60,6 +61,54 @@ const createTransaction = async (req, res) => {
     return res.status(400).json({
       message: `Insufficient balance in from account to perform transaction. Current balance is ${balance}. Please reduce the amount or add funds to the account and try again.`,
     });
-    
+
   }
+
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  const transaction = await Transaction.create({
+    fromAccount,
+    toAccount,
+    amount,
+    idempotencyKey,
+    status: "PENDING",
+  },{ session });
+
+
+  const debitLedgerEntry = await Ledger.create(
+    {
+      account: fromAccount,
+      type: "debit",
+      amount,
+      transaction: transaction._id,
+    },
+    { session },
+  );
+
+
+  const creditLedgerEntry = await Ledger.create(
+    {
+      account: toAccount,
+      type: "credit",
+      amount,
+      transaction: transaction._id,
+    },
+    { session },
+  );
+  transaction.status = "COMPLETED";
+  await transaction.save({ session });
+  await session.commitTransaction();
+  session.endSession();
+
+  await sendTransactionEmail(
+   req.user.name,
+    req.user.email,
+    amount,
+    toUserAccount._id,
+  );
+  res.status(201).json({
+    message: "Transaction completed successfully",
+    transaction,
+  });
 };

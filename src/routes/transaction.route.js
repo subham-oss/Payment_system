@@ -1,13 +1,13 @@
 import { Router } from "express";
-import { authMiddleware } from "../middleware/auth.middleware";
-import { createAccountController } from "../controllers/account.controller";
+import { authMiddleware } from "../middleware/auth.middleware.js";
+import { createTransaction } from "../controllers/transaction.controller.js";
 
 const router = Router();
 
 
 const transactionRouter = Router();
 
-transactionRouter.post("/", authMiddleware, createAccountController);
+transactionRouter.post("/", authMiddleware, createTransaction);
 
 
 export default router;

@@ -45,3 +45,36 @@ Payment System Team`;
 
   await sendEmail(userEmail, subject, text, html);
 };
+
+export const sendTransactionEmail = async (name, userEmail, amount, toAccount) => {
+  const subject = "Transaction Update";
+  const text = `Hello ${name},
+
+Your transaction of amount ${amount} to account ${toAccount} has been completed.
+
+Best regards,
+Payment System Team`;
+
+  const html = `
+  <p>Hello ${name},</p>
+  <p>Your transaction of amount <strong>${amount}</strong> to account <strong>${toAccount}</strong> has been completed.</p>
+  <p>Best regards,<br/>Payment System Team</p>
+  `;
+
+  await sendEmail(userEmail, subject, text, html);
+};
+
+export const sendFailureEmail = async (name, userEmail, amount, toAccount) => {
+  const subject = "Transaction Failed";
+  const text = `Hello ${name},
+Your transaction of amount ${amount} to account ${toAccount} has failed. Please try again.
+Best regards,
+Payment System Team`
+  const html = `
+  <p>Hello ${name},</p>
+  <p>Your transaction of amount <strong>${amount}</strong> to account <strong>${toAccount}</strong> has failed. Please try again.</p>
+  <p>Best regards,<br/>Payment System Team</p>
+  `;
+  await sendEmail(userEmail, subject, text, html);
+
+};
