@@ -3,6 +3,8 @@ import Transaction from "../models/transaction.model.js";
 import Ledger from "../models/ledger.model.js";
 import Account from "../models/account.model.js";
 import { sendTransactionEmail, sendFailureEmail } from "../services/email.service";
+
+
 export const createTransaction = async (req, res) => {
   const { fromAccount, toAccount, amount, idempotencyKey } = req.body;
 
@@ -112,3 +114,64 @@ export const createTransaction = async (req, res) => {
     transaction,
   });
 };
+
+
+export const createInitialFunds = async (req, res) => {
+    const { toAccount, amount, idempotencyKey } = req.body;
+    if (!toAccount || !amount || !idempotencyKey) {
+        return res.status(400).json({
+            message: "To account, amount and idempotency key are required",
+        });
+    }
+    const toUserAccount = await Account.findOne({ _id: toAccount });
+    if (!toUserAccount) {
+        return res.status(404).json({ message: "Account not found" });
+    }
+
+    const fromUserAccount = await Account.findOne({systemUser: true, user: req.user._id });
+    if (!fromUserAccount) {
+        return res.status(404).json({ message: "System account not found" });
+    }
+     const session = await mongoose.startSession();
+  session.startTransaction();
+
+  const transaction = new Transaction({
+    fromUserAccount,
+    toAccount,
+    amount,
+    idempotencyKey,
+    status: "PENDING",
+  });
+
+
+  const debitLedgerEntry = await Ledger.create([
+    {
+      account: fromUserAccount._id,
+      type: "debit",
+      amount,
+      transaction: transaction._id,
+    },
+    { session },]
+  );
+
+
+  const creditLedgerEntry = await Ledger.create([
+    {
+      account: toAccount,
+      type: "credit",
+      amount,
+      transaction: transaction._id,
+    },
+    { session },]
+  );
+  transaction.status = "COMPLETED";
+  await transaction.save({ session });
+  await session.commitTransaction();
+  session.endSession();
+
+  res.status(201).json({
+    message: "Initial funds added successfully",
+    transaction,
+  });
+ 
+}
