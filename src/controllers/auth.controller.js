@@ -1,6 +1,7 @@
 import User from "../models/user.model.js";
 import jwt from "jsonwebtoken";
 import { sendRegistrationEmail } from "../services/email.service.js";
+import Backlist from "../models/backlist.model.js";
 
 export const userRegisterController = async (req, res) => {
   const { name, email, password } = req.body;
@@ -59,3 +60,17 @@ export const userLoginController = async (req, res) => {
     token,
   });
 };
+
+export const userLogoutController = async(req, res) => {
+  const token = req.cookies.token || req.headers.authorization?.split(" ")[1];
+  if(!token){
+    return res.status(200).json({
+      message: "User logged out successfully",
+    });
+  }
+  res.clearCookie("token");
+  await Backlist.create({ token });
+  res.status(200).json({
+    message: "User logged out successfully",
+  });
+}
